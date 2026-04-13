@@ -5,23 +5,48 @@ from pathlib import Path
 import yaml
 
 from fast_ai.exceptions import AllProvidersFailedError, ConfigurationError, ProviderError
-from fast_ai.llm.base import LLMProvider, LLMResponse
-from fast_ai.llm.providers.ollama import OllamaProvider
-from fast_ai.llm.providers.openai import OpenAIProvider
 from fast_ai.logger import get_logger
+from fast_ai.stt.base import STTProvider, STTResponse
+from fast_ai.stt.providers.faster_whisper import FasterWhisperProvider
+from fast_ai.stt.providers.openai import OpenAIWhisperProvider
 
-log = get_logger("llm.fast_llm")
+log = get_logger("stt")
 
 
-class FastLLM:
-    """Orchestrator that tries providers in order, with configurable rounds.
+class STT:
+    """Fault-tolerant speech-to-text orchestrator.
+
+    Tries providers in order with configurable retry rounds,
+    same pattern as FastLLM / OCR / ImageDescriber.
 
     Args:
-        providers: Ordered list of LLMProvider instances.
+        providers: Ordered list of STTProvider instances.
         max_rounds: How many full passes through the provider list before raising.
+
+    Config format (``stt_config.yaml``)::
+
+        max_rounds: 2
+        providers:
+          - type: faster_whisper
+            model: base
+            device: auto
+            compute_type: default
+            beam_size: 5
+            vad_filter: true
+            timeout: 120
+          - type: openai_whisper
+            base_url: https://api.openai.com
+            model: whisper-1
+            token: ${OPENAI_API_KEY}
+            timeout: 60
     """
 
-    def __init__(self, providers: list[LLMProvider], max_rounds: int = 1):
+    PROVIDER_REGISTRY: dict[str, type[STTProvider]] = {
+        "faster_whisper": FasterWhisperProvider,
+        "openai_whisper": OpenAIWhisperProvider,
+    }
+
+    def __init__(self, providers: list[STTProvider], max_rounds: int = 1):
         if not providers:
             raise ConfigurationError("providers list must not be empty")
         if max_rounds < 1:
@@ -35,28 +60,9 @@ class FastLLM:
             len(providers), max_rounds, [p.provider_name for p in providers],
         )
 
-    PROVIDER_REGISTRY: dict[str, type[LLMProvider]] = {
-        "ollama": OllamaProvider,
-        "openai": OpenAIProvider,
-    }
-
     @classmethod
-    def build(cls, config_path: str | Path) -> "FastLLM":
-        """Build a FastLLM instance from a YAML config file.
-
-        Config format::
-
-            max_rounds: 2
-            providers:
-              - type: ollama
-                base_url: http://localhost:11434
-                model: qwen2.5vl:7b
-                retries: 2
-                timeout: 60
-              - type: openai
-                base_url: https://api.openai.com
-                model: gpt-4o
-                token: ${OPENAI_API_KEY}
+    def build(cls, config_path: str | Path) -> "STT":
+        """Build an STT instance from a YAML config file.
 
         Values containing ``${VAR}`` are expanded from environment variables.
         """
@@ -70,7 +76,7 @@ class FastLLM:
         if not cfg or "providers" not in cfg:
             raise ConfigurationError("config must contain a 'providers' list")
 
-        providers: list[LLMProvider] = []
+        providers: list[STTProvider] = []
         for entry in cfg["providers"]:
             entry = {k: cls._expand_env(v) for k, v in entry.items()}
             ptype = entry.pop("type", None)
@@ -95,26 +101,32 @@ class FastLLM:
             value,
         )
 
-    def generate(
+    def transcribe(
         self,
-        messages: list[dict[str, str]],
+        audio: str | Path,
         *,
+        language: str | None = None,
         timeout: float | None = None,
         **kwargs,
-    ) -> LLMResponse:
-        """Try each provider in order; repeat up to max_rounds times.
+    ) -> STTResponse:
+        """Transcribe an audio file using the provider chain.
 
         Args:
-            messages: List of {"role": ..., "content": ...} dicts.
+            audio: Path to the audio file.
+            language: Language code (e.g. "ru", "en"). None for auto-detect.
             timeout: Override per-provider timeout for this call.
             **kwargs: Provider-specific parameters forwarded as-is.
 
         Returns:
-            LLMResponse from the first provider that succeeds.
+            STTResponse from the first provider that succeeds.
 
         Raises:
             AllProvidersFailedError: Every provider failed across all rounds.
         """
+        audio_path = Path(audio)
+        if not audio_path.exists():
+            raise FileNotFoundError(f"audio file not found: {audio_path}")
+
         errors: list[ProviderError] = []
 
         for round_num in range(1, self.max_rounds + 1):
@@ -122,8 +134,16 @@ class FastLLM:
 
             for provider in self.providers:
                 try:
-                    result = provider.generate(messages, timeout=timeout, **kwargs)
-                    log.info("provider %s succeeded in round %d", provider.provider_name, round_num)
+                    result = provider.transcribe(
+                        audio_path,
+                        language=language,
+                        timeout=timeout,
+                        **kwargs,
+                    )
+                    log.info(
+                        "provider %s succeeded in round %d",
+                        provider.provider_name, round_num,
+                    )
                     return result
                 except ProviderError as exc:
                     log.warning(

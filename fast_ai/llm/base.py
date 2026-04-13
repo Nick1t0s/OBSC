@@ -62,5 +62,19 @@ class LLMProvider(ABC):
         """
         ...
 
+    def format_vision_messages(
+        self, prompt: str, images_base64: list[str],
+    ) -> list[dict]:
+        """Build provider-specific messages list containing text + images."""
+        raise NotImplementedError(
+            f"{type(self).__name__} does not support vision messages"
+        )
+
+    def extract_content(self, response: "LLMResponse") -> str:
+        """Extract the text content string from a provider response body."""
+        raise NotImplementedError(
+            f"{type(self).__name__} does not implement extract_content"
+        )
+
     def __repr__(self) -> str:
         return f"{type(self).__name__}(base_url={self.base_url!r}, model={self.model!r})"

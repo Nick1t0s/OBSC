@@ -54,3 +54,11 @@ class OllamaProvider(LLMProvider):
             )
 
         raise ProviderError(self.provider_name, f"all {self.retries} attempts failed", cause=last_err)
+
+    def format_vision_messages(
+        self, prompt: str, images_base64: list[str],
+    ) -> list[dict]:
+        return [{"role": "user", "content": prompt, "images": images_base64}]
+
+    def extract_content(self, response: LLMResponse) -> str:
+        return response.body["message"]["content"]

@@ -1,0 +1,10 @@
+prompt: "Опиши подробно, что изображено на картинке. Укажи основные объекты, их расположение, цвета и общую атмосферу."
+
+max_rounds: 2
+
+providers:
+  - type: ollama
+    base_url: http://localhost:11434
+    model: qwen2.5vl:7b
+    retries: 2
+    timeout: 120

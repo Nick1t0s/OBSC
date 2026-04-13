@@ -1,0 +1,10 @@
+prompt: "Распознай весь текст на изображении. Верни только распознанный текст, без пояснений."
+
+max_rounds: 2
+
+providers:
+  - type: ollama
+    base_url: http://localhost:11434
+    model: qwen2.5vl:7b
+    retries: 2
+    timeout: 120

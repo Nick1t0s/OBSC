@@ -72,3 +72,17 @@ class OpenAIProvider(LLMProvider):
             )
 
         raise ProviderError(self.provider_name, f"all {self.retries} attempts failed", cause=last_err)
+
+    def format_vision_messages(
+        self, prompt: str, images_base64: list[str],
+    ) -> list[dict]:
+        content: list[dict] = [{"type": "text", "text": prompt}]
+        for img in images_base64:
+            content.append({
+                "type": "image_url",
+                "image_url": {"url": f"data:image/jpeg;base64,{img}"},
+            })
+        return [{"role": "user", "content": content}]
+
+    def extract_content(self, response: LLMResponse) -> str:
+        return response.body["choices"][0]["message"]["content"]
