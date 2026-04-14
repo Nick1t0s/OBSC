@@ -16,10 +16,16 @@ class Sheet:
 @dataclass
 class XLSX:
     sheets: list[Sheet] = field(default_factory=list)
+    file_name: str = ""
 
     @property
     def result(self) -> str:
         return "\n\n".join(f"{s.name}:{s.csv}" for s in self.sheets)
+
+    def render(self) -> str:
+        header = f"Excel: {self.file_name}"
+        body = "\n\n".join(f"{s.name}: {s.csv}" for s in self.sheets)
+        return f"{header}\n{body}" if body else header
 
 
 class XLSXProcessor(BaseComplexProcessor):
@@ -60,17 +66,19 @@ class XLSXProcessor(BaseComplexProcessor):
 
         if isinstance(source, bytes):
             wb = load_workbook(filename=io.BytesIO(source), read_only=True, data_only=True)
+            file_name = ""
         else:
             path = Path(source)
             if not path.exists():
                 raise FileNotFoundError(f"xlsx not found: {path}")
             wb = load_workbook(filename=path, read_only=True, data_only=True)
+            file_name = path.name
 
         try:
             sheets: list[Sheet] = []
             for ws in wb.worksheets:
                 sheets.append(Sheet(name=ws.title, csv=self._sheet_to_csv(ws)))
-            return XLSX(sheets=sheets)
+            return XLSX(sheets=sheets, file_name=file_name)
         finally:
             wb.close()
 

@@ -13,6 +13,14 @@ from processor.simple_processor.photo.photo_processor import Photo
 @dataclass
 class PowerPoint:
     photos: list[Photo] = field(default_factory=list)
+    file_name: str = ""
+
+    def render(self) -> str:
+        header = f"PowerPoint: {self.file_name}"
+        body = "\n\n".join(
+            f"Слайд {i}: {p.result}" for i, p in enumerate(self.photos, start=1)
+        )
+        return f"{header}\n\n{body}" if body else header
 
 
 class PowerPointProcessor(BaseComplexProcessor):
@@ -58,7 +66,8 @@ class PowerPointProcessor(BaseComplexProcessor):
     def run(self, source: str | Path | bytes) -> PowerPoint:
         pdf_bytes = self._convert_to_pdf(source)
         pdf: PDF = self.pdf_processor.run(pdf_bytes)
-        return PowerPoint(photos=pdf.photos)
+        file_name = "" if isinstance(source, bytes) else Path(source).name
+        return PowerPoint(photos=pdf.photos, file_name=file_name)
 
     def _convert_to_pdf(self, source: str | Path | bytes) -> bytes:
         if shutil.which(self.soffice) is None and not Path(self.soffice).exists():

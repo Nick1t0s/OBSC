@@ -9,6 +9,14 @@ from processor.simple_processor.photo.photo_processor import Photo, PhotoProcess
 @dataclass
 class PDF:
     photos: list[Photo] = field(default_factory=list)
+    file_name: str = ""
+
+    def render(self) -> str:
+        header = f"PDF: {self.file_name}"
+        body = "\n\n".join(
+            f"Страница {i}: {p.result}" for i, p in enumerate(self.photos, start=1)
+        )
+        return f"{header}\n\n{body}" if body else header
 
 
 class PDFProcessor(BaseComplexProcessor):
@@ -50,7 +58,8 @@ class PDFProcessor(BaseComplexProcessor):
     def run(self, source: str | Path | bytes) -> PDF:
         images = self._render_pages(source)
         photos = [self.photo_processor.run(img) for img in images]
-        return PDF(photos=photos)
+        file_name = "" if isinstance(source, bytes) else Path(source).name
+        return PDF(photos=photos, file_name=file_name)
 
     def _render_pages(self, source: str | Path | bytes) -> list[bytes]:
         try:
