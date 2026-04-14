@@ -1,0 +1,8 @@
+# Example config for PhotoProcessor
+# (processor.simple_processor.photo.photo_processor.PhotoProcessor.build)
+#
+# Paths are resolved relative to this config file's directory.
+
+ocr_config: ocr_config.yaml
+describer_config: describer_config.yaml
+template_path: templates/photo.txt

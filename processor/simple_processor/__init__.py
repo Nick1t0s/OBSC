@@ -1,0 +1,1 @@
+from processor.simple_processor.base_processor import BaseProcessor

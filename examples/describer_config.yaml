@@ -1,0 +1,21 @@
+# Example config for ImageDescriber (fast_ai.describer.ImageDescriber.build)
+#
+# Vision-based image description. Providers must support vision input.
+
+prompt: "Опиши подробно, что изображено на картинке. Укажи основные объекты, их расположение, цвета и общую атмосферу."
+
+max_rounds: 2
+
+providers:
+  - type: ollama
+    base_url: http://localhost:11434
+    model: qwen2.5vl:7b
+    retries: 2
+    timeout: 120
+
+  - type: openai
+    base_url: https://api.openai.com
+    model: gpt-4o
+    token: ${OPENAI_API_KEY}
+    retries: 1
+    timeout: 120

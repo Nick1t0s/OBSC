@@ -1,0 +1,24 @@
+# Example config for FastLLM (fast_ai.llm.fast_llm.FastLLM.build)
+#
+# FastLLM tries providers in order. If a provider fails all its internal
+# `retries`, the next provider is tried. After all providers fail once,
+# the cycle repeats up to `max_rounds` times.
+
+max_rounds: 2
+
+providers:
+  # Local Ollama server — hits POST {base_url}/api/chat
+  - type: ollama
+    base_url: http://localhost:11434
+    model: qwen2.5:7b
+    retries: 2
+    timeout: 60
+
+  # OpenAI-compatible endpoint — hits POST {base_url}/v1/chat/completions
+  # Works with OpenAI, Together, Groq, OpenRouter, vLLM, etc.
+  - type: openai
+    base_url: https://api.openai.com
+    model: gpt-4o-mini
+    token: ${OPENAI_API_KEY}
+    retries: 1
+    timeout: 60

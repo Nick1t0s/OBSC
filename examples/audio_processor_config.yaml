@@ -1,0 +1,7 @@
+# Example config for AudioProcessor
+# (processor.simple_processor.audio.audio_processor.AudioProcessor.build)
+#
+# Paths are resolved relative to this config file's directory.
+
+stt_config: stt_config.yaml
+template_path: templates/audio.txt

@@ -1,0 +1,26 @@
+# FastLLM config — fault-tolerant LLM orchestration.
+# Tries providers top-to-bottom, repeating the list up to max_rounds times.
+
+max_rounds: 2
+
+providers:
+  - type: ollama
+    base_url: http://localhost:11434
+    model: llama3.1:8b
+    retries: 2
+    timeout: 60
+
+  - type: openai
+    base_url: https://api.openai.com
+    model: gpt-4o-mini
+    token: ${OPENAI_API_KEY}
+    retries: 2
+    timeout: 60
+
+  # OpenAI-compatible endpoint (e.g. Together, Groq, local vLLM)
+  - type: openai
+    base_url: https://api.together.xyz
+    model: meta-llama/Llama-3.3-70B-Instruct-Turbo
+    token: ${TOGETHER_API_KEY}
+    retries: 1
+    timeout: 90

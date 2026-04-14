@@ -1,0 +1,29 @@
+# Example config for STT (fast_ai.stt.STT.build)
+#
+# Fault-tolerant speech-to-text. Same retry/rounds pattern as FastLLM.
+
+max_rounds: 2
+
+providers:
+  # Local faster-whisper — runs in a subprocess so the model is unloaded
+  # from memory after each call. Requires `faster-whisper` installed.
+  - type: faster_whisper
+    model: base              # base | small | medium | large-v3 | or path
+    device: auto             # auto | cpu | cuda
+    compute_type: default    # default | float16 | int8 | int8_float16 | ...
+    beam_size: 5
+    vad_filter: true
+    word_timestamps: false
+    temperature: 0.0
+    # initial_prompt: "Контекст для модели"
+    retries: 1
+    timeout: 300
+
+  # OpenAI Audio API — POST {base_url}/v1/audio/transcriptions
+  - type: openai_whisper
+    base_url: https://api.openai.com
+    model: whisper-1
+    token: ${OPENAI_API_KEY}
+    response_format: verbose_json   # verbose_json gives segments/duration
+    retries: 1
+    timeout: 120

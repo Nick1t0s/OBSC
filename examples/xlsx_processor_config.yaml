@@ -1,0 +1,4 @@
+# Example config for XLSXProcessor
+# (processor.complex_processor.xlsx.xlsx_processor.XLSXProcessor.build)
+
+csv_delimiter: ","
