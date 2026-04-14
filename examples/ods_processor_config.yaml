@@ -1,0 +1,9 @@
+# Example config for ODSProcessor
+# (processor.complex_processor.ods.ods_processor.ODSProcessor.build)
+#
+# Paths are resolved relative to this config file's directory.
+# Requires LibreOffice (`soffice`) on PATH for .ods -> .xlsx conversion.
+# `xlsx_processor_config` is optional; if omitted, a default XLSXProcessor is used.
+
+xlsx_processor_config: xlsx_processor_config.yaml
+soffice: soffice

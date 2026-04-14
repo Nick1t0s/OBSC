@@ -1,0 +1,8 @@
+# Example config for PowerPointProcessor
+# (processor.complex_processor.powerpoint.powerpoint_processor.PowerPointProcessor.build)
+#
+# Paths are resolved relative to this config file's directory.
+# Requires LibreOffice (`soffice`) on PATH for .pptx -> .pdf conversion.
+
+pdf_processor_config: pdf_processor_config.yaml
+soffice: soffice

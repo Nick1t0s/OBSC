@@ -1,0 +1,8 @@
+# Example config for ODPProcessor
+# (processor.complex_processor.odp.odp_processor.ODPProcessor.build)
+#
+# Paths are resolved relative to this config file's directory.
+# Requires LibreOffice (`soffice`) on PATH for .odp -> .pdf conversion.
+
+pdf_processor_config: pdf_processor_config.yaml
+soffice: soffice

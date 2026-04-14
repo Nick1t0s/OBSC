@@ -1,0 +1,8 @@
+# Example config for WordProcessor
+# (processor.complex_processor.word.word_processor.WordProcessor.build)
+#
+# Paths are resolved relative to this config file's directory.
+# Requires LibreOffice (`soffice`) on PATH for .docx/.doc -> .pdf conversion.
+
+pdf_processor_config: pdf_processor_config.yaml
+soffice: soffice
