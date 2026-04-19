@@ -14,6 +14,9 @@ class Photo:
     description: str
     result: str
 
+    def render(self) -> str:
+        return self.result
+
 
 class PhotoProcessor(BaseProcessor):
     """Processes a photo through OCR and ImageDescriber, then fills a template.

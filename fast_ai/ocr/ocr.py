@@ -1,11 +1,11 @@
 import base64
 from pathlib import Path
 
-from fast_ai.exceptions import AllProvidersFailedError, ConfigurationError, ProviderError
+from fast_ai.exceptions import ConfigurationError
 from fast_ai.llm.fast_llm import FastLLM
 from fast_ai.logger import get_logger
 
-log = get_logger("ocr")
+log = get_logger("ocr.ocr")
 
 DEFAULT_PROMPT = (
     "Распознай весь текст на изображении. "
@@ -75,31 +75,7 @@ class OCR:
         """
         image_b64 = self._encode(image)
         effective_prompt = prompt or self.prompt
-        errors: list[ProviderError] = []
-
-        for round_num in range(1, self.llm.max_rounds + 1):
-            log.debug("round %d/%d", round_num, self.llm.max_rounds)
-
-            for provider in self.llm.providers:
-                messages = provider.format_vision_messages(
-                    effective_prompt, [image_b64],
-                )
-                try:
-                    response = provider.generate(messages)
-                    text = provider.extract_content(response)
-                    log.info(
-                        "provider %s succeeded in round %d",
-                        provider.provider_name, round_num,
-                    )
-                    return text
-                except ProviderError as exc:
-                    log.warning(
-                        "provider %s failed in round %d: %s",
-                        provider.provider_name, round_num, exc,
-                    )
-                    errors.append(exc)
-
-        raise AllProvidersFailedError(errors)
+        return self.llm.generate_vision(effective_prompt, [image_b64])
 
     @staticmethod
     def _encode(image: str | Path | bytes) -> str:

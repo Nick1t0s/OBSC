@@ -16,6 +16,9 @@ class Audio:
     segments: list[STTSegment] = field(default_factory=list)
     result: str = ""
 
+    def render(self) -> str:
+        return self.result
+
 
 class AudioProcessor(BaseProcessor):
     """Processes an audio file through STT, then fills a template.

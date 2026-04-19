@@ -133,3 +133,43 @@ class FastLLM:
                     errors.append(exc)
 
         raise AllProvidersFailedError(errors)
+
+    def generate_vision(
+        self,
+        prompt: str,
+        images_base64: list[str],
+        *,
+        timeout: float | None = None,
+        **kwargs,
+    ) -> str:
+        """Vision-запрос через цепочку провайдеров.
+
+        Каждый провайдер сам формирует сообщения (`format_vision_messages`)
+        и извлекает текст ответа (`extract_content`).
+
+        Raises:
+            AllProvidersFailedError: все провайдеры упали во всех раундах.
+        """
+        errors: list[ProviderError] = []
+
+        for round_num in range(1, self.max_rounds + 1):
+            log.debug("vision round %d/%d", round_num, self.max_rounds)
+
+            for provider in self.providers:
+                messages = provider.format_vision_messages(prompt, images_base64)
+                try:
+                    response = provider.generate(messages, timeout=timeout, **kwargs)
+                    text = provider.extract_content(response)
+                    log.info(
+                        "provider %s succeeded in round %d",
+                        provider.provider_name, round_num,
+                    )
+                    return text
+                except ProviderError as exc:
+                    log.warning(
+                        "provider %s failed in round %d: %s",
+                        provider.provider_name, round_num, exc,
+                    )
+                    errors.append(exc)
+
+        raise AllProvidersFailedError(errors)

@@ -1,0 +1,21 @@
+header_template_path: templates/email_header.txt
+
+attachment_processors:
+  photo:
+    extensions: [jpg, jpeg, png, webp]
+    config: photo_processor_config.yaml
+  pdf:
+    extensions: [pdf]
+    config: pdf_processor_config.yaml
+  word:
+    extensions: [doc, docx]
+    config: word_processor_config.yaml
+  powerpoint:
+    extensions: [ppt, pptx]
+    config: powerpoint_processor_config.yaml
+  xlsx:
+    extensions: [xlsx]
+    config: xlsx_processor_config.yaml
+  audio:
+    extensions: [mp3, wav, m4a, ogg, flac]
+    config: audio_processor_config.yaml

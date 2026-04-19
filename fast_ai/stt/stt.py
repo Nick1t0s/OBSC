@@ -10,7 +10,7 @@ from fast_ai.stt.base import STTProvider, STTResponse
 from fast_ai.stt.providers.faster_whisper import FasterWhisperProvider
 from fast_ai.stt.providers.openai import OpenAIWhisperProvider
 
-log = get_logger("stt")
+log = get_logger("stt.stt")
 
 
 class STT:

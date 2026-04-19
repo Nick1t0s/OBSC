@@ -1,0 +1,4 @@
+От: $sender
+Кому: $recipient
+Тема: $subject
+Дата: $date
